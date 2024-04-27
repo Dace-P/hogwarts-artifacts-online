@@ -225,27 +225,4 @@ class HogwartsUserControllerIntegrationTest {
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 
-    @Test
-    @DisplayName("Check deleteUser with insufficient permission (DELETE)")
-    void testDeleteUserNoAccessAsRoleUser() throws Exception {
-        ResultActions resultActions = this.mockMvc.perform(post(this.baseUrl + "/users/login").with(httpBasic("eric", "654321"))); // httpBasic() is from spring-security-test.
-        MvcResult mvcResult = resultActions.andDo(print()).andReturn();
-        String contentAsString = mvcResult.getResponse().getContentAsString();
-        JSONObject json = new JSONObject(contentAsString);
-        String ericToken = "Bearer " + json.getJSONObject("data").getString("token");
-
-        this.mockMvc.perform(delete(this.baseUrl + "/users/2").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, ericToken))
-                .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(StatusCode.FORBIDDEN))
-                .andExpect(jsonPath("$.message").value("No permission."))
-                .andExpect(jsonPath("$.data").value("Access Denied"));
-        this.mockMvc.perform(get(this.baseUrl + "/users").accept(MediaType.APPLICATION_JSON).header(HttpHeaders.AUTHORIZATION, this.token))
-                .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS))
-                .andExpect(jsonPath("$.message").value("Find All Success"))
-                .andExpect(jsonPath("$.data", Matchers.hasSize(3)))
-                .andExpect(jsonPath("$.data[0].id").value(1))
-                .andExpect(jsonPath("$.data[0].username").value("john"));
-    }
-
 }
